@@ -1,0 +1,30 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src",          // 👈 all your .ts files live here
+    "outDir": "./dist",          // 👈 compiled JS will be placed here
+
+    // Environment Settings
+    "module": "node16",
+    "moduleResolution": "node16",
+    "target": "es2022",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    // Other Outputs
+    "sourceMap": true,
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false,
+
+    // Recommended Options
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"],             // 👈 only compile files inside src
+  "exclude": ["node_modules"]     // 👈 ignore dependencies
+}

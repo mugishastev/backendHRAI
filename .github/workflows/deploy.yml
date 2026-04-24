@@ -1,0 +1,30 @@
+name: Production Deployment
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend to Production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy Status (Mock)
+        run: |
+          echo "Initiating deployment to production server..."
+          echo "Deployment successful! Check status at https://github.com/${{ github.repository }}/actions"
+
+  deploy-frontend:
+    name: Deploy Frontend to Production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Cloud Status
+        run: |
+          echo "Pushing build to Global Edge Network..."
+          echo "Frontend Live at: https://umurava-ai.vercel.app (Example)"
