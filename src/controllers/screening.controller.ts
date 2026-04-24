@@ -44,8 +44,9 @@ export const runScreening = async (req: Request, res: Response) => {
             // Must use 'applied' instead of 'screening' to match Mongoose enum
             const status = result.rank <= 10 ? 'shortlisted' : 'applied';
             await Applicant.findByIdAndUpdate(result.applicantId, {
-                aiScore: result.matchScore,
-                aiSummary: result.summary + " " + result.finalRecommendation,
+                matchScore: result.matchScore,
+                aiReasoning: result.summary,
+                aiRecommendation: result.finalRecommendation,
                 status: status
             });
         }
@@ -81,9 +82,13 @@ export const runScreening = async (req: Request, res: Response) => {
         throw aiError;
     }
 
-  } catch (error) {
-    console.error('Screening Error:', error);
-    res.status(500).json({ error: 'Failed to execute screening process' });
+  } catch (error: any) {
+    console.error('CRITICAL Screening Error:', error);
+    res.status(500).json({ 
+        error: 'Failed to execute screening process',
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
