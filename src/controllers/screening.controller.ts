@@ -30,6 +30,10 @@ export const runScreening = async (req: Request, res: Response) => {
         // Run AI evaluation
         const aiResults = await AIService.screenCandidates(job, applicants);
 
+        if (!Array.isArray(aiResults) || aiResults.length === 0) {
+            throw new Error('AI returned no valid ranking results. Please check candidate data and try again.');
+        }
+
         // Save results
         screening.results = aiResults;
         screening.status = 'COMPLETED';
