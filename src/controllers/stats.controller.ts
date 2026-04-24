@@ -2,13 +2,14 @@ import { Request, Response } from 'express';
 import Job from '../models/Job';
 import Applicant from '../models/Applicant';
 import Screening from '../models/Screening';
+import User from '../models/User';
 
 export const getDashboardStats = async (req: Request, res: Response) => {
   try {
     const [totalJobs, totalCandidates, totalUsers, completedScreenings, pendingScreenings, shortlistedCandidates, jobs, recentApplicants] = await Promise.all([
       Job.countDocuments(),
       Applicant.countDocuments(),
-      require('../models/User').default.countDocuments(),
+      User.countDocuments(),
       Screening.countDocuments({ status: 'COMPLETED' }),
       Screening.countDocuments({ status: 'PENDING' }),
       Applicant.countDocuments({ status: 'shortlisted' }),

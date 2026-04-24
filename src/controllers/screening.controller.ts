@@ -37,7 +37,8 @@ export const runScreening = async (req: Request, res: Response) => {
 
         // Persist AI Insights to Applicant records and auto-shortlist top performers
         for (const result of aiResults) {
-            const status = result.rank <= 10 ? 'shortlisted' : 'screening';
+            // Must use 'applied' instead of 'screening' to match Mongoose enum
+            const status = result.rank <= 10 ? 'shortlisted' : 'applied';
             await Applicant.findByIdAndUpdate(result.applicantId, {
                 aiScore: result.matchScore,
                 aiSummary: result.summary + " " + result.finalRecommendation,
