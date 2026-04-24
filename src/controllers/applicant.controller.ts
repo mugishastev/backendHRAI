@@ -85,7 +85,11 @@ export const bulkUploadApplicants = async (req: Request, res: Response) => {
         // NEW: Batch Resume Parsing for Bulk Uploads
         const formattedApplicants = [];
         for (const app of applicants) {
-            const appData = { ...app, jobId };
+            const appData = { 
+                ...app, 
+                jobId,
+                phone: app.phone || 'N/A' // Ensure required field exists
+            };
             if (appData.resumeUrl && !appData.resumeText) {
                 try {
                     appData.resumeText = await extractTextFromResume(appData.resumeUrl);
