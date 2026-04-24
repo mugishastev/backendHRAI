@@ -4,9 +4,17 @@ dotenv.config();
 export class AIService {
   static async screenCandidates(job: any, applicants: any[]) {
     try {
-      // Dynamic import for ESM package in CJS environment
-      const { GoogleGenAI } = await import('@google/genai');
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
+      // Correct import for the official Google SDK
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      
+      const apiKey = process.env.GEMINI_API_KEY as string;
+      if (!apiKey) {
+        throw new Error('GEMINI_API_KEY is not defined in environment variables');
+      }
+
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+      const model = genAI.getGenerativeModel({ model: modelName });
 
       const prompt = `
 You are an expert technical recruiter and AI assistant.
@@ -47,23 +55,17 @@ Each object in the array must strictly follow this JSON structure:
 }
 `;
 
-      const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-      const response = await ai.models.generateContent({
-        model,
-        contents: prompt,
-        config: {
-            temperature: 0.3,
-        }
-      });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const responseText = response.text();
       
-      const responseText = response.text || "[]";
       // Remove possible markdown JSON wrapper
       const cleanedJSON = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
       
       return JSON.parse(cleanedJSON);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in AI Screening:', error);
-      throw new Error('AI Screening failed');
+      throw new Error(`AI Screening failed: ${error.message}`);
     }
   }
 }
