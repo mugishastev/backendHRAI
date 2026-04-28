@@ -14,6 +14,11 @@ export interface IScreening extends Document {
   jobId: mongoose.Types.ObjectId;
   results: IScreeningResult[];
   status: 'PENDING' | 'COMPLETED' | 'FAILED';
+  biasAudit?: {
+    fairnessScore: number;
+    diversityInsights: string;
+    flaggedIssues: string[];
+  };
   createdAt: Date;
 }
 
@@ -30,7 +35,12 @@ const ScreeningResultSchema = new Schema({
 const ScreeningSchema: Schema = new Schema({
   jobId: { type: Schema.Types.ObjectId, ref: 'Job', required: true },
   status: { type: String, enum: ['PENDING', 'COMPLETED', 'FAILED'], default: 'PENDING' },
-  results: { type: [ScreeningResultSchema], default: [] }
+  results: { type: [ScreeningResultSchema], default: [] },
+  biasAudit: {
+    fairnessScore: { type: Number, default: 100 },
+    diversityInsights: { type: String },
+    flaggedIssues: { type: [String], default: [] }
+  }
 }, { timestamps: true });
 
 export default mongoose.model<IScreening>('Screening', ScreeningSchema);

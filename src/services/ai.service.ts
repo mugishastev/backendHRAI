@@ -17,10 +17,12 @@ export class AIService {
       const model = genAI.getGenerativeModel({ model: modelName });
 
       const prompt = `
-You are an expert technical recruiter and AI assistant.
+You are an expert technical recruiter and AI assistant for HRAI.
 Your task is to analyze a list of job applicants against a specific job description and requirements.
-Return a valid JSON array of the shortlisted candidates (max 10), ranked from best to worst. 
-Do not contain any markdown wrapping like \`\`\`json, just pure JSON output.
+
+### FAIRNESS DIRECTIVE
+You must strictly avoid bias. Do not consider gender, age, ethnicity, location, or any other protected characteristics. 
+Focus exclusively on professional skills, experience, and cultural add.
 
 Job Title: ${job.title}
 Job Description: ${job.description}
@@ -36,34 +38,46 @@ Experience: ${app.experience || 'Not specified'}
 Parsed Resume Content: ${(app.resumeText || 'No resume').substring(0, 5000)}
 `).join('\n')}
 
-Based on the match between each applicant and the job, provide the structured evaluation.
-Each object in the array must strictly follow this JSON structure:
+### OUTPUT FORMAT
+Return a valid JSON object. Do not contain markdown wrapping.
+Structure:
 {
-  "applicantId": "The ID provided in the applicant profile",
-  "rank": number,
-  "matchScore": number,
-  "summary": "Short summary",
-  "strengths": [],
-  "gaps": [],
-  "finalRecommendation": "Reasoning"
+  "rankings": [
+    {
+      "applicantId": "string",
+      "rank": number,
+      "matchScore": number,
+      "summary": "string",
+      "strengths": ["string"],
+      "gaps": ["string"],
+      "finalRecommendation": "string"
+    }
+  ],
+  "biasAudit": {
+    "fairnessScore": number (0-100),
+    "diversityInsights": "Summary of how diversity was considered without using protected traits",
+    "flaggedIssues": ["List any potential biases detected in the job description or applicant pool"]
+  }
 }
 `;
 
-      console.log('🤖 Sending prompt to Gemini...');
+      console.log('🤖 Sending prompt to Gemini with Bias Guardrails...');
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const responseText = response.text();
       console.log('📥 AI Response received.');
       
-      // Remove possible markdown JSON wrapper
       const cleanedJSON = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
       
       try {
         const parsed = JSON.parse(cleanedJSON);
-        return Array.isArray(parsed) ? parsed : [];
+        return {
+          rankings: Array.isArray(parsed.rankings) ? parsed.rankings : [],
+          biasAudit: parsed.biasAudit || { fairnessScore: 100, diversityInsights: 'Standard evaluation applied', flaggedIssues: [] }
+        };
       } catch (parseError) {
         console.error('❌ Failed to parse AI JSON:', cleanedJSON);
-        return [];
+        return { rankings: [], biasAudit: { fairnessScore: 0, diversityInsights: 'Parsing failed', flaggedIssues: ['Error parsing AI output'] } };
       }
     } catch (error: any) {
       console.error('❌ Error in AI Screening:', error);

@@ -28,19 +28,20 @@ export const runScreening = async (req: Request, res: Response) => {
 
     try {
         // Run AI evaluation
-        const aiResults = await AIService.screenCandidates(job, applicants);
+        const { rankings, biasAudit } = await AIService.screenCandidates(job, applicants);
 
-        if (!Array.isArray(aiResults) || aiResults.length === 0) {
+        if (!Array.isArray(rankings) || rankings.length === 0) {
             throw new Error('AI returned no valid ranking results. Please check candidate data and try again.');
         }
 
         // Save results
-        screening.results = aiResults;
+        screening.results = rankings;
+        screening.biasAudit = biasAudit;
         screening.status = 'COMPLETED';
         await screening.save();
 
         // Persist AI Insights to Applicant records and auto-shortlist top performers
-        for (const result of aiResults) {
+        for (const result of rankings) {
             // Must use 'applied' instead of 'screening' to match Mongoose enum
             const status = result.rank <= 10 ? 'shortlisted' : 'applied';
             await Applicant.findByIdAndUpdate(result.applicantId, {
@@ -56,7 +57,7 @@ export const runScreening = async (req: Request, res: Response) => {
 
         // Notify Candidates Automatically
         for (const applicant of applicants) {
-             const result = aiResults.find((r: any) => String(r.applicantId) === String(applicant._id));
+             const result = rankings.find((r: any) => String(r.applicantId) === String(applicant._id));
              if (result) {
                   const isSelected = result.rank <= 10;
                   const subject = `HRAI Application Result: ${job.title}`;
