@@ -54,10 +54,10 @@ export const runScreening = async (req: Request, res: Response) => {
             // Create an in-app notification targeted strictly to this applicant's ID
             // targeting applicant.userId if they are registered, or their applicant ID
             await notificationService.create({
-                userId: applicant.userId || applicant._id,
+                targetUserId: String(applicant.userId || applicant._id),
                 title: `Update: Application for ${job.title}`,
-                message: feedbackMessage,
-                status: isSelected ? 'SUCCESS' : 'REJECTION'
+                desc: feedbackMessage,
+                type: isSelected ? 'success' : 'info'
             });
 
             // Send external email via Communication Service

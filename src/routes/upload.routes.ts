@@ -30,13 +30,13 @@ const upload = multer({
     limits: {
         fileSize: 5 * 1024 * 1024, // 5 MB file size limit
     },
-    fileFilter: (req, file, cb) => {
+    fileFilter: (req: any, file: any, cb: any) => {
         const allowedMimes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
         if (allowedMimes.includes(file.mimetype)) {
             cb(null, true); // Accept file
         } else {
             // Set a custom error message on the request object
-            (req as Request).fileValidationError = 'Invalid file type. Only PDF, DOC, and DOCX files are allowed.';
+            (req as any).fileValidationError = 'Invalid file type. Only PDF, DOC, and DOCX files are allowed.';
             cb(null, false); // Reject file
         }
     },
@@ -61,7 +61,8 @@ if (isCloudinaryConfigured) {
  */
 router.post('/resume', verifyToken, uploadLimiter, upload.single('resume'), async (req: Request, res: Response) => {
     try {
-        if (!req.file) {
+        const file = (req as any).file;
+        if (!file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
@@ -70,8 +71,8 @@ router.post('/resume', verifyToken, uploadLimiter, upload.single('resume'), asyn
         }
 
         // Check for file type validation error from Multer's fileFilter
-        if (req.fileValidationError) {
-            return res.status(400).json({ error: req.fileValidationError });
+        if ((req as any).fileValidationError) {
+            return res.status(400).json({ error: (req as any).fileValidationError });
         }
 
         // Stream the buffer to Cloudinary
@@ -86,7 +87,7 @@ router.post('/resume', verifyToken, uploadLimiter, upload.single('resume'), asyn
                     resolve(result);
                 }
             );
-            uploadStream.end(req.file?.buffer);
+            uploadStream.end(file.buffer);
         });
 
         return res.status(200).json({ url: (result as any).secure_url });

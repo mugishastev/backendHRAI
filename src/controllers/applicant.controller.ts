@@ -4,6 +4,7 @@ import Job from '../models/Job';
 import communicationService from '../services/communication.service';
 import notificationService from '../services/notification.service';
 import { extractTextFromResume } from '../routes/resumeParser';
+import { AIService } from '../services/ai.service';
 
 export const addApplicant = async (req: any, res: Response) => {
   try {
@@ -24,17 +25,24 @@ export const addApplicant = async (req: any, res: Response) => {
             const url = applicantData.resumeUrl.trim();
             console.log(`[ResumeProcessor] Starting extraction for ${applicantData.name} from: ${url}`);
             
-            // Basic validation
             if (url.startsWith('http')) {
                 const extractedText = await extractTextFromResume(url);
                 applicantData.resumeText = extractedText;
-                console.log(`[ResumeProcessor] Successfully extracted ${extractedText?.length || 0} characters.`);
-            } else {
-                console.warn(`[ResumeProcessor] Invalid URL format for ${applicantData.name}: ${url}`);
+                
+                if (extractedText && extractedText.trim().length > 10) {
+                    console.log(`[ResumeProcessor] Deep analyzing structure for ${applicantData.name}...`);
+                    const analysis = await AIService.analyzeResumeStructure(extractedText);
+                    if (analysis) {
+                        applicantData.structuredProfile = analysis;
+                        console.log(`[ResumeProcessor] Completeness Score: ${analysis.completenessScore}%`);
+                    }
+                } else {
+                    console.warn(`[ResumeProcessor] Warning: ${applicantData.name}'s resume returned minimal text. It might be a scanned image/PDF.`);
+                    applicantData.resumeText = "[SCANNED IMAGE DETECTED] This resume appears to be a scanned image and could not be transcribed to text. Please ask the candidate for a text-based PDF or use an OCR tool.";
+                }
             }
         } catch (parseError: any) {
             console.warn(`[ResumeProcessor] Failed to extract text for ${applicantData.name}:`, parseError.message);
-            // We continue anyway, so the applicant record is created
         }
     }
     
