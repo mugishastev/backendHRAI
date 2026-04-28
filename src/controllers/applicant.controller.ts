@@ -180,3 +180,33 @@ export const withdrawApplication = async (req: any, res: Response) => {
     res.status(500).json({ error: 'Failed to withdraw application' });
   }
 };
+
+export const transcribeApplicantResume = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const applicant = await Applicant.findById(id);
+        
+        if (!applicant) return res.status(404).json({ error: 'Applicant not found' });
+        if (!applicant.resumeUrl) return res.status(400).json({ error: 'No resume URL found for this applicant' });
+
+        console.log(`[ManualTranscriber] Starting for ${applicant.name}...`);
+        const text = await extractTextFromResume(applicant.resumeUrl);
+        
+        if (text) {
+            applicant.resumeText = text;
+            
+            // Also update structural analysis while we're at it
+            const analysis = await AIService.analyzeResumeStructure(text);
+            if (analysis) {
+                applicant.structuredProfile = analysis;
+            }
+            
+            await applicant.save();
+            return res.json({ message: 'Transcription successful', data: applicant });
+        } else {
+            return res.status(422).json({ error: 'Extracted text was empty or invalid' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ error: 'Transcription failed', details: error.message });
+    }
+};

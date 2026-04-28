@@ -1,8 +1,8 @@
 import { extractTextFromResume } from './routes/resumeParser';
 
 async function test() {
-    const testPdf = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
-    console.log('Testing PDF extraction...');
+    const testPdf = 'https://res.cloudinary.com/diszeadzi/raw/upload/v1777398609/hrai_resumes/ayfizttq30ifbirpcx7k';
+    console.log('Testing User Cloudinary URL extraction...');
     try {
         const text = await extractTextFromResume(testPdf);
         console.log('--- EXTRACTED TEXT ---');

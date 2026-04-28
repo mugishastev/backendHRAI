@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { addApplicant, getApplicantsByJobId, bulkUploadApplicants, getAllApplicants, updateApplicantStatus, getMyApplications, withdrawApplication } from '../controllers/applicant.controller';
+import { addApplicant, getApplicantsByJobId, bulkUploadApplicants, getAllApplicants, updateApplicantStatus, getMyApplications, withdrawApplication, transcribeApplicantResume } from '../controllers/applicant.controller';
 import { verifyToken, isRecruiter, isAdmin, optionalVerifyToken } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -15,6 +15,7 @@ router.delete('/:id', verifyToken, withdrawApplication);
 router.use(verifyToken);
 router.get('/', isRecruiter, getAllApplicants); 
 router.patch('/:id/status', isRecruiter, updateApplicantStatus); 
+router.post('/:id/transcribe', isRecruiter, transcribeApplicantResume); 
 
 router.use(isRecruiter); 
 router.post('/bulk', bulkUploadApplicants);
