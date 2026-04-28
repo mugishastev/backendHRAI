@@ -1,10 +1,16 @@
 import { Request, Response } from 'express';
 import Job from '../models/Job';
+import notificationService from '../services/notification.service';
 
 export const createJob = async (req: Request, res: Response) => {
   try {
     const job = new Job(req.body);
     await job.save();
+    
+    // Notify admins
+    const creatorName = (req as any).user?.email || 'A recruiter';
+    notificationService.notifyJobCreated(job.title, creatorName);
+    
     res.status(201).json(job);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create job' });
@@ -67,6 +73,10 @@ export const deleteJob = async (req: Request, res: Response) => {
   try {
     const job = await Job.findByIdAndDelete(req.params.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
+    
+    // Notify admins
+    notificationService.notifyJobDeleted(job.title);
+    
     res.json({ message: 'Job deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete job' });

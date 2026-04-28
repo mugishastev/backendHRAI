@@ -53,6 +53,33 @@ class NotificationService {
       targetUserId: userId
     });
   }
+
+  async notifyJobCreated(jobTitle: string, creatorName: string) {
+    return this.create({
+      title: 'New Job Posted',
+      desc: `A new job "${jobTitle}" has been posted by ${creatorName}.`,
+      type: 'success',
+      targetRole: 'admin'
+    });
+  }
+
+  async notifyJobDeleted(jobTitle: string) {
+    return this.create({
+      title: 'Job Removed',
+      desc: `The job listing for "${jobTitle}" has been deleted.`,
+      type: 'warning',
+      targetRole: 'admin'
+    });
+  }
+
+  async notifyApplicationWithdrawn(applicantName: string, jobTitle: string) {
+    return this.create({
+      title: 'Application Withdrawn',
+      desc: `${applicantName} has withdrawn their application for "${jobTitle}".`,
+      type: 'warning',
+      targetRole: 'recruiter'
+    });
+  }
 }
 
 export default new NotificationService();

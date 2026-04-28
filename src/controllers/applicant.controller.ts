@@ -169,11 +169,14 @@ export const getMyApplications = async (req: any, res: Response) => {
 export const withdrawApplication = async (req: any, res: Response) => {
   try {
     const { id } = req.params;
-    const applicant = await Applicant.findOneAndDelete({ _id: id, userId: req.user.userId });
+    const applicant = await Applicant.findOneAndDelete({ _id: id, userId: req.user.userId }).populate('jobId');
     
     if (!applicant) {
         return res.status(404).json({ error: 'Application not found or unauthorized' });
     }
+
+    // Notify recruiter
+    notificationService.notifyApplicationWithdrawn(applicant.name, (applicant.jobId as any).title);
 
     res.json({ message: 'Application withdrawn successfully' });
   } catch (error) {
