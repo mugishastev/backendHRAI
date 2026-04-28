@@ -28,6 +28,13 @@ export interface IApplicant extends Document {
   strengths?: string[];
   gaps?: string[];
   aiRecommendation?: string;
+  notes?: Array<{
+    content: string;
+    author: string;
+    createdAt: Date;
+  }>;
+  tags?: string[];
+  interviewDate?: Date;
   createdAt: Date;
 }
 
@@ -63,6 +70,13 @@ const ApplicantSchema: Schema = new Schema({
   portfolioUrl: { type: String },
   availability: { type: String },
   structuredProfile: { type: Schema.Types.Mixed }, // Arbitrary JSON for structured talent schemas
+  notes: [{
+    content: String,
+    author: String,
+    createdAt: { type: Date, default: Date.now }
+  }],
+  tags: { type: [String], default: [] },
+  interviewDate: { type: Date },
 }, { timestamps: true });
 
 export default mongoose.model<IApplicant>('Applicant', ApplicantSchema);

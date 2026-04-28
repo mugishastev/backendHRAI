@@ -213,3 +213,32 @@ export const transcribeApplicantResume = async (req: Request, res: Response) => 
         res.status(500).json({ error: 'Transcription failed', details: error.message });
     }
 };
+
+export const bulkUpdateStatus = async (req: Request, res: Response) => {
+    try {
+        const { ids, status } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'IDs must be a non-empty array' });
+        }
+
+        const result = await Applicant.updateMany(
+            { _id: { $in: ids } },
+            { $set: { status } }
+        );
+
+        res.json({ message: `Successfully updated ${result.modifiedCount} applicants`, modifiedCount: result.modifiedCount });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to bulk update status' });
+    }
+};
+
+export const updateApplicant = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const applicant = await Applicant.findByIdAndUpdate(id, req.body, { new: true });
+        if (!applicant) return res.status(404).json({ error: 'Applicant not found' });
+        res.json(applicant);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update applicant' });
+    }
+};
