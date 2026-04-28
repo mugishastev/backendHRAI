@@ -21,12 +21,19 @@ export const addApplicant = async (req: any, res: Response) => {
     // NEW: Automatic Resume Parsing if URL exists
     if (applicantData.resumeUrl && !applicantData.resumeText) {
         try {
-            console.log(`[ResumeParser] Extracting text for ${applicantData.name}...`);
-            const extractedText = await extractTextFromResume(applicantData.resumeUrl);
-            applicantData.resumeText = extractedText;
-            console.log(`[ResumeParser] Successfully extracted ${extractedText.length} characters.`);
-        } catch (parseError) {
-            console.warn(`[ResumeParser] Failed to extract text for ${applicantData.name}:`, parseError);
+            const url = applicantData.resumeUrl.trim();
+            console.log(`[ResumeProcessor] Starting extraction for ${applicantData.name} from: ${url}`);
+            
+            // Basic validation
+            if (url.startsWith('http')) {
+                const extractedText = await extractTextFromResume(url);
+                applicantData.resumeText = extractedText;
+                console.log(`[ResumeProcessor] Successfully extracted ${extractedText?.length || 0} characters.`);
+            } else {
+                console.warn(`[ResumeProcessor] Invalid URL format for ${applicantData.name}: ${url}`);
+            }
+        } catch (parseError: any) {
+            console.warn(`[ResumeProcessor] Failed to extract text for ${applicantData.name}:`, parseError.message);
             // We continue anyway, so the applicant record is created
         }
     }
