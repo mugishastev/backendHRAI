@@ -8,6 +8,7 @@ import userRoutes from './user.routes';
 import notificationRoutes from './notification.routes';
 import logRoutes from './logs.routes';
 import uploadRoutes from './upload.routes';
+import communicationRoutes from './communication.routes';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/users', userRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/audit-logs', logRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/communication', communicationRoutes);
 
 export default router;

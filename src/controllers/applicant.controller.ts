@@ -221,12 +221,30 @@ export const bulkUpdateStatus = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'IDs must be a non-empty array' });
         }
 
+        const applicants = await Applicant.find({ _id: { $in: ids } }).populate('jobId', 'title');
+        
         const result = await Applicant.updateMany(
             { _id: { $in: ids } },
             { $set: { status } }
         );
 
-        res.json({ message: `Successfully updated ${result.modifiedCount} applicants`, modifiedCount: result.modifiedCount });
+        // Send emails to all affected applicants
+        for (const applicant of applicants) {
+            const subject = `Application Update: ${status.toUpperCase()} - ${(applicant.jobId as any).title}`;
+            const body = `Hi ${applicant.name},\n\nWe wanted to let you know that the status of your application for "${(applicant.jobId as any).title}" has been updated to: **${status.toUpperCase()}**.\n\nBest regards,\nThe HRAI Talent Team`;
+            
+            communicationService.sendEmail(applicant.email, subject, body).catch(err => {
+                console.warn(`Failed to send bulk update email to ${applicant.email}:`, err);
+            });
+
+            if (applicant.userId) {
+                notificationService.notifyStatusUpdate(String(applicant.userId), (applicant.jobId as any).title, status).catch(err => {
+                    console.warn(`Failed to send bulk in-app notification to ${applicant.userId}:`, err);
+                });
+            }
+        }
+
+        res.json({ message: `Successfully updated ${result.modifiedCount} applicants and triggered notifications`, modifiedCount: result.modifiedCount });
     } catch (error) {
         res.status(500).json({ error: 'Failed to bulk update status' });
     }
