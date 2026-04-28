@@ -11,6 +11,12 @@ export interface IApplicant extends Document {
   currentJobTitle?: string;
   experience?: string;
   skills?: string[];
+  extractedSkills?: string[];
+  skillsVerification?: {
+    verified: string[];
+    claimedButMissing: string[];
+    hiddenGems: string[]; // Skills found in resume but not claimed
+  };
   linkedinUrl?: string;
   portfolioUrl?: string;
   availability?: string;
@@ -35,6 +41,12 @@ const ApplicantSchema: Schema = new Schema({
   coverLetter: { type: String },
   currentJobTitle: { type: String },
   skills: { type: [String], default: [] },
+  extractedSkills: { type: [String], default: [] },
+  skillsVerification: {
+    verified: { type: [String], default: [] },
+    claimedButMissing: { type: [String], default: [] },
+    hiddenGems: { type: [String], default: [] }
+  },
   experience: { type: String },
   status: {
     type: String,

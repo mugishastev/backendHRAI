@@ -50,7 +50,12 @@ Structure:
       "summary": "string",
       "strengths": ["string"],
       "gaps": ["string"],
-      "finalRecommendation": "string"
+      "finalRecommendation": "string",
+      "skillsVerification": {
+        "verified": ["Skills found in both profile and resume"],
+        "claimedButMissing": ["Skills claimed in profile but NOT found in resume text"],
+        "hiddenGems": ["Valuable skills found in resume but NOT mentioned in profile"]
+      }
     }
   ],
   "biasAudit": {

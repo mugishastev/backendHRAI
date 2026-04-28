@@ -48,6 +48,8 @@ export const runScreening = async (req: Request, res: Response) => {
                 matchScore: result.matchScore,
                 aiReasoning: result.summary,
                 aiRecommendation: result.finalRecommendation,
+                skillsVerification: result.skillsVerification,
+                extractedSkills: [...(result.skillsVerification?.verified || []), ...(result.skillsVerification?.hiddenGems || [])],
                 status: status
             });
         }
