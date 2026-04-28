@@ -5,6 +5,7 @@ import Job from '../models/Job';
 import { AIService } from '../services/ai.service';
 import communicationService from '../services/communication.service';
 import notificationService from '../services/notification.service';
+import { extractTextFromResume } from '../routes/resumeParser';
 
 export const runScreening = async (req: Request, res: Response) => {
   try {
@@ -24,6 +25,24 @@ export const runScreening = async (req: Request, res: Response) => {
     } else {
         screening.status = 'PENDING';
         await screening.save();
+    }
+
+    // NEW: Self-Healing Logic - Try to transcribe missing resumes before AI run
+    console.log(`[ScreeningHealer] Checking ${applicants.length} applicants for missing transcripts...`);
+    for (const applicant of applicants) {
+        if ((!applicant.resumeText || applicant.resumeText.trim().length < 50) && applicant.resumeUrl) {
+            try {
+                console.log(`[ScreeningHealer] Healing transcript for ${applicant.name}...`);
+                const text = await extractTextFromResume(applicant.resumeUrl);
+                if (text) {
+                    applicant.resumeText = text;
+                    await applicant.save();
+                    console.log(`[ScreeningHealer] Successfully healed ${applicant.name}.`);
+                }
+            } catch (healError) {
+                console.warn(`[ScreeningHealer] Failed to heal ${applicant.name}:`, healError);
+            }
+        }
     }
 
     try {

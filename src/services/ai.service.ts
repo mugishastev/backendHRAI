@@ -16,6 +16,10 @@ export class AIService {
       const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
       const model = genAI.getGenerativeModel({ model: modelName });
 
+      console.log(`[AIService] Preparing to screen ${applicants.length} candidates for "${job.title}".`);
+      const candidatesWithText = applicants.filter(a => a.resumeText && a.resumeText.trim().length > 0).length;
+      console.log(`[AIService] Resumes with text: ${candidatesWithText} / ${applicants.length}`);
+
       const prompt = `
 You are an expert technical recruiter and AI assistant for HRAI.
 Your task is to analyze a list of job applicants against a specific job description and requirements.
